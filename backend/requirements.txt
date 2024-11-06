@@ -1,0 +1,15 @@
+fastapi
+uvicorn 
+langchain
+faiss-cpu
+openai
+PyPDF2 
+python-dotenv
+langchain_community
+langchain_openai
+langchain_google_genai
+google-generativeai
+chromadb
+mysql-connector-python
+python-multipart
+uuid

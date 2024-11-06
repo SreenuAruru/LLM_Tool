@@ -1,0 +1,16 @@
+{
+  "name": "llm-tool",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start-backend": "cd ../backend && python main.py",
+    "build-frontend": "cd ../frontend && npm run build",
+    "electron-start": "concurrently \"npm run start-backend\" \"electron .\"",
+    "package": "electron-packager . llm-tool --platform=win32 --arch=x64 --out=dist --overwrite"
+  },
+  "devDependencies": {
+    "electron": "^33.0.2",
+    "electron-packager": "^17.1.2",
+    "concurrently": "^7.0.0"
+  }
+}
