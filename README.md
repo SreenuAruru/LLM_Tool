@@ -17,3 +17,5 @@
 2. npm run package = for build electron dist on electron folder
    ![alt text](<Screenshot 2024-11-05 145504.png>)
    ![alt text](<Screenshot 2024-11-06 113513.png>)
+   <img width="959" alt="Screenshot 2024-11-06 121223" src="https://github.com/user-attachments/assets/cae4fa33-2af6-42cb-9810-71da99f574ef">
+
