@@ -29,10 +29,8 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [dbCredentials, setDbCredentials] = useState({
-    host: "",
     user: "",
     password: "",
-    database: "",
   });
   const storedCredentials = JSON.parse(localStorage.getItem("dbCredentials"));
   console.log("storedCredentials", storedCredentials);
@@ -44,7 +42,7 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
       const formData = new FormData();
       formData.append("user_question", question);
       formData.append("user_api_key", apiKey);
-      formData.append("model_name", selectedModel);
+      formData.append("ai_model_name", selectedModel);
       if (!isGeneralQuestion) {
         formData.append("store_id", storeId); // Only send store_id if it's not a general question
       }
@@ -97,12 +95,7 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
   };
 
   const handleSaveCredentials = async () => {
-    if (
-      !dbCredentials.host ||
-      !dbCredentials.user ||
-      !dbCredentials.password ||
-      !dbCredentials.database
-    ) {
+    if (!dbCredentials.user || !dbCredentials.password) {
       toast.error("Please fill all fields!");
       return;
     }
@@ -123,7 +116,7 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
   };
 
   const handleDeleteCredential = async () => {
-    setDbCredentials({ host: "", user: "", password: "", database: "" });
+    setDbCredentials({ user: "", password: "" });
     localStorage.removeItem("dbCredentials");
     // toast.success("Database connection removed!");
     await fetch("http://localhost:8000/clear-database-credentials/", {
@@ -248,15 +241,6 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
         <DialogTitle>Database Credentials</DialogTitle>
         <DialogContent>
           <TextField
-            label="Host"
-            value={dbCredentials.host}
-            onChange={(e) =>
-              setDbCredentials({ ...dbCredentials, host: e.target.value })
-            }
-            fullWidth
-            margin="normal"
-          />
-          <TextField
             label="User"
             value={dbCredentials.user}
             onChange={(e) =>
@@ -275,22 +259,11 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
             fullWidth
             margin="normal"
           />
-          <TextField
-            label="Database"
-            value={dbCredentials.database}
-            onChange={(e) =>
-              setDbCredentials({ ...dbCredentials, database: e.target.value })
-            }
-            fullWidth
-            margin="normal"
-          />
+
           <List>
             {
               <ListItem>
-                <ListItemText
-                  primary={`${dbCredentials.user}@${dbCredentials.host}`}
-                  secondary={dbCredentials.database}
-                />
+                <ListItemText primary={dbCredentials.user} />
                 <ListItemSecondaryAction>
                   <IconButton
                     edge="end"

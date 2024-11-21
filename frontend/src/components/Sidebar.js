@@ -58,10 +58,10 @@ const Sidebar = ({ setSelectedModel, setApiKey, setStoreId }) => {
       (item) => item.ai_model === selectedModel
     );
     if (selectedApiModel) {
-      setApiKey(selectedApiModel.model_api_key); // Set the API key dynamically based on the selected model
+      setApiKey(selectedApiModel.api_key_model); // Set the API key dynamically based on the selected model
       console.log(
-        "selectedApiModel.model_api_key",
-        selectedApiModel.model_api_key
+        "selectedApiModel.api_key_model",
+        selectedApiModel.api_key_model
       );
     }
   };
@@ -72,14 +72,14 @@ const Sidebar = ({ setSelectedModel, setApiKey, setStoreId }) => {
     // );
 
     // if (selectedApiModel) {
-    //   setApiKey(selectedApiModel.model_api_key); // Set the API key dynamically based on the selected model
+    //   setApiKey(selectedApiModel.api_key_model); // Set the API key dynamically based on the selected model
     // }
 
     if (apiInput) {
       axios
         .post("http://localhost:8000/store-model-selection/", {
           ai_model: model,
-          model_api_key: apiInput,
+          api_key_model: apiInput,
         })
         .then((response) => {
           console.log(response.data.message);
