@@ -18,53 +18,42 @@ def connect_to_opcua_server(endpoint: str) :
         logging.error("Failed to connect to OPC UA Server: %s", str(e))
         return None  # Return None if connection fails
 
+
 def update_single_node_value(client: Client, answer: str, question: str):
-    """
-    Update a single node's value based on the provided node_id and the question provided.
-    The node is updated only if there's a word match between the display name and the sanitized question.
-    The answer is processed to extract numeric values (space-separated) before updating the node.
-    """
     try:
-        # Define the node ID to update
-        node_id = "ns=2;i=10221"
+        node_id = "ns=2;i=2"  # Adjust the node ID as required
         node = client.get_node(node_id)
-        current_value = node.get_value()
-        logging.info("Current value of the node '%s' is: %s", node_id, current_value)
-
-        # Get the display name of the node
         display_name = node.get_display_name().Text
-        display_name_words = set(display_name.lower().split())  # Split and convert to lowercase for matching
 
-        # Sanitize the question: remove special characters and split into words
-        sanitized_question = re.sub(r'[^\w\s]', '', question)  # Remove punctuation
-        question_words = set(sanitized_question.lower().split())
+        logging.info("Retrieved Display Name: %s", display_name)
 
-        logging.info("Checking node with display name: %s", display_name)
-
-        # Process the answer to extract space-separated numeric values
-        sanitized_answer = ' '.join(word.strip(',.?!\'"') for word in answer.split())  # Remove leading/trailing chars
-        numeric_values = [int(word) for word in sanitized_answer.split() if word.isdigit()]  # Filter numeric values
-
-        if numeric_values:
-            # Use the first numeric value for the update
-            numeric_value = numeric_values[0]
-            logging.info("Extracted numeric value from answer: %s", numeric_value)
-        else:
-            logging.warning("No numeric value found in the answer. Update aborted.")
-            return False  # Abort if no numeric value is found
-
-        # Check if there's any word overlap between the question and the display name
-        if question_words & display_name_words:  # Intersection to find common words
-            logging.info("Match found! Updating node '%s' with new value: %s", display_name, numeric_value)
+        # Normalize to lowercase
+        sanitized_display_name = re.findall(r'\b\w+-?\d*\b', display_name.lower())  # Extract words or patterns like te-102
+        sanitized_question = re.findall(r'\b\w+-?\d*\b', question.lower())  # Same normalization for question
+        
+        logging.info("Sanitized Display Name Words: %s", sanitized_display_name)
+        logging.info("Sanitized Question Words: %s", sanitized_question)
+        
+        # Check for matches
+        intersection = set(sanitized_display_name) & set(sanitized_question)
+        logging.info("Intersection: %s", intersection)
+        
+        if intersection:
+            sanitized_answer = ' '.join(word.strip(',.?!\'"') for word in answer.split())
+            numeric_values = [int(word) for word in sanitized_answer.split() if word.isdigit()]
             
-            # Update the node's value with the extracted numeric value
-            node.set_value(ua.Variant(numeric_value, ua.VariantType.Int32))
-            logging.info("Node '%s' updated successfully.", display_name)
-            return True  # Successfully updated the node
+            if numeric_values:
+                numeric_value = numeric_values[0]
+                logging.info("Match found! Updating node with value: %s", numeric_value)
+                node.set_value(ua.Variant(numeric_value, ua.VariantType.Int32))
+                return True
+            else:
+                logging.warning("No numeric value found in the answer: %s", sanitized_answer)
+                return False
         else:
-            logging.info("No word match found for node '%s'. No update performed.", display_name)
-            return False  # No match found, update not performed
-
+            logging.info("No word match found. Update not performed.")
+            return False
     except Exception as e:
-        logging.error("Error while updating node '%s': %s", node_id, str(e))
-        return False  # Indicate failure if an error occurs
+        logging.error("Error updating node: %s", str(e))
+        return False
+

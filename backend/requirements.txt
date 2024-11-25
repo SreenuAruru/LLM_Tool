@@ -13,3 +13,4 @@ chromadb
 mysql-connector-python
 python-multipart
 uuid
+opcua

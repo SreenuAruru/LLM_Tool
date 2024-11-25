@@ -22,7 +22,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 app = FastAPI()
 
 # OPC_UA_SERVER_ENDPOINT = os.getenv("OPC_UA_SERVER_ENDPOINT")
-OPC_UA_SERVER_ENDPOINT = "opc.tcp://127.0.0.1:4841/llmtool/server/"
+OPC_UA_SERVER_ENDPOINT = os.getenv("OPC_UA_SERVER_ENDPOINT")
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
