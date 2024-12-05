@@ -1,7 +1,6 @@
 from opcua import Server, ua
 from datetime import datetime
 import pandas as pd
-import mysql.connector
 import time
 import random
 import logging
@@ -11,26 +10,6 @@ logging.basicConfig(filename="opcua_server.log", level=logging.INFO, format="%(a
 
 # Update the file path to the location of the Excel file
 excel_path = r"C:\Users\Sreen\Downloads\Project 10001_Instrument Index_R3_18-Mar-2024 (1).xlsx"
-
-# Connect to MySQL database
-db_connection = mysql.connector.connect(
-    host="localhost",
-    user="root",         # Replace with your MySQL username
-    password="SreenuAruru@2640",     # Replace with your MySQL password
-    database="iadb"       # Database created earlier
-)
-cursor = db_connection.cursor()
-
-# Create a table for historical data if not exists
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS history (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    tag_id VARCHAR(100) NOT NULL,
-    timestamp DATETIME NOT NULL,
-    value DOUBLE NOT NULL
-)
-""")
-db_connection.commit()
 
 # Load the Excel file
 data = pd.read_excel(excel_path, engine='openpyxl')  # Use openpyxl as the engine
@@ -105,34 +84,6 @@ for index, row in tags_data.iterrows():
         "last_value": value_variable.get_value(),  # Initialize the last value
     }
 
-    # Log the initial value to the database
-    cursor.execute(
-        "INSERT INTO history (tag_id, timestamp, value) VALUES (%s, %s, %s)",
-        (tag_id, datetime.now(), value_variable.get_value())
-    )
-    db_connection.commit()
-
-# Define a custom method for querying historical data
-def query_history(parent, tag_id):
-    """
-    Custom OPC UA method to query historical data for a given tag ID.
-    """
-    cursor.execute("SELECT timestamp, value FROM history WHERE tag_id = %s ORDER BY timestamp ASC", (tag_id,))
-    results = cursor.fetchall()
-    return [
-        f"Timestamp: {row[0]}, Value: {row[1]}" for row in results
-    ]
-
-# Add method for querying historical data
-history_node = objects.add_object(namespace, "HistoryQuery")
-history_query_method = history_node.add_method(
-    namespace,
-    "QueryHistory",
-    query_history,
-    [ua.VariantType.String],  # Input argument: tag ID
-    [ua.VariantType.String]   # Output argument: List of historical values
-)
-
 # Start server
 server.start()
 print(f"Server started at {server.endpoint}")
@@ -168,13 +119,6 @@ try:
             variable.set_value(new_value)
             node_data["last_value"] = new_value  # Update the last value
 
-            # Log the new value to the database
-            cursor.execute(
-                "INSERT INTO history (tag_id, timestamp, value) VALUES (%s, %s, %s)",
-                (sanitized_tag_id, datetime.now(), new_value)
-            )
-            db_connection.commit()
-
         # Wait for 20 seconds before the next update cycle
         time.sleep(20)
 except KeyboardInterrupt:
@@ -182,5 +126,4 @@ except KeyboardInterrupt:
     logging.info("Server stopped")
 finally:
     server.stop()
-    db_connection.close()
-    logging.info("Database connection closed.")
+    logging.info("Server shutdown complete.")
