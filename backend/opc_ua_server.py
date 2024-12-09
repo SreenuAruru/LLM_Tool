@@ -1,38 +1,29 @@
 from opcua import Server, ua
-from datetime import datetime
-import pandas as pd
-import time
 import random
+import time
 import logging
+import pandas as pd
 
 # Set up logging
-logging.basicConfig(filename="opcua_server.log", level=logging.INFO, format="%(asctime)s - %(message)s")
+logging.basicConfig(filename="opcua_server_updated.log", level=logging.INFO, format="%(asctime)s - %(message)s")
 
-# Update the file path to the location of the Excel file
-excel_path = r"C:\Users\Sreen\Downloads\Project 10001_Instrument Index_R3_18-Mar-2024 (1).xlsx"
+# Update the file path to the location of your Excel file
+excel_path = r"C:\Users\Sreen\Downloads\tags 2 revised.xlsx"
 
 # Load the Excel file
 data = pd.read_excel(excel_path, engine='openpyxl')  # Use openpyxl as the engine
 
-# Extract relevant columns
-relevant_columns = [
-    "TG NO",
-    "INST. TYPE DESCRIPTION",
-    "TAG SERVICE",
-    "CALIB. RANGE MIN",
-    "CALIB. RANGE MAX",
-    "CALIB. RANGE UOM",
-    "SIGNAL TYPE"
-]
-tags_data = data[relevant_columns].dropna(subset=["TG NO"])
+# Filter relevant columns
+relevant_columns = ["Tag Number", "Description", "Units"]
+tags_data = data[relevant_columns].dropna(subset=["Tag Number"])
 
 # Initialize OPC UA server
 server = Server()
 server.set_endpoint("opc.tcp://127.0.0.1:4841/llmtool/server/")  # Use IPv4 and an alternative port
-server.set_server_name("Enhanced Excel-Based OPC UA Server")
+server.set_server_name("Updated Excel-Based OPC UA Server")
 
 # Set namespace
-namespace = server.register_namespace("ExcelInstrumentNamespace")
+namespace = server.register_namespace("UpdatedInstrumentNamespace")
 objects = server.nodes.objects
 
 # Create a folder for all tags
@@ -41,46 +32,32 @@ tags_folder = objects.add_folder(namespace, "Tags")
 # Add nodes dynamically based on Excel data
 nodes = {}
 for index, row in tags_data.iterrows():
-    tag_id = row["TG NO"]
-    sanitized_tag_id = tag_id  # Replace hyphens for valid identifiers
-
-    # Ensure numeric calibration range
-    try:
-        min_range = float(row["CALIB. RANGE MIN"]) if not pd.isna(row["CALIB. RANGE MIN"]) else 0.0
-    except ValueError:
-        min_range = 0.0
-
-    try:
-        max_range = float(row["CALIB. RANGE MAX"]) if not pd.isna(row["CALIB. RANGE MAX"]) else 100.0
-    except ValueError:
-        max_range = 100.0
+    tag_id = row["Tag Number"]
+    sanitized_tag_id = tag_id  # Ensure valid identifier by replacing spaces
 
     # Add the main value variable under the Tags folder
-    value_variable = tags_folder.add_variable(namespace, sanitized_tag_id, random.uniform(min_range, max_range))
+    value_variable = tags_folder.add_variable(namespace, sanitized_tag_id, random.uniform(0.0, 100.0))
     value_variable.set_writable()
 
     # Add descriptions
-    signal_type = row.get("SIGNAL TYPE", "Unknown")  # Default to "Unknown" if no signal type
-    variable_description = (
-        f"Main value of the instrument. Measures {row['INST. TYPE DESCRIPTION']}.\n"
-        f"Range: {min_range}-{max_range} {row['CALIB. RANGE UOM']}.\n"
-        f"Signal Type: {signal_type}."
-    )
+    description = row["Description"] if not pd.isna(row["Description"]) else "No description provided."
+    unit = row["Units"] if not pd.isna(row["Units"]) else "N/A"
+    variable_description = f"{description} Units: {unit}."
     value_variable.set_attribute(ua.AttributeIds.Description, ua.DataValue(ua.LocalizedText(variable_description)))
 
-    # Print information about the added variable
-    print(f"Added tag: {tag_id}, Range: {min_range}-{max_range}, Signal Type: {signal_type}")
-    logging.info(f"Added tag: {tag_id}, Range: {min_range}-{max_range}, Signal Type: {signal_type}")
+    # Log the addition of the variable
+    print(f"Added tag: {tag_id}, Description: {description}, Units: {unit}")
+    logging.info(f"Added tag: {tag_id}, Description: {description}, Units: {unit}")
 
     # Assign a random increment rate (1, 2, or 0.5)
     increment = random.choice([1, 2, 0.5])
 
-    # Save the variable and ranges for updates
+    # Save the variable and increment for updates
     nodes[sanitized_tag_id] = {
         "variable": value_variable,
         "increment": increment,
-        "min_range": min_range,
-        "max_range": max_range,
+        "min_range": 0.0,
+        "max_range": 100.0,
         "last_value": value_variable.get_value(),  # Initialize the last value
     }
 
@@ -120,7 +97,7 @@ try:
             node_data["last_value"] = new_value  # Update the last value
 
         # Wait for 20 seconds before the next update cycle
-        time.sleep(20)
+        time.sleep(200)
 except KeyboardInterrupt:
     print("Server stopped")
     logging.info("Server stopped")
