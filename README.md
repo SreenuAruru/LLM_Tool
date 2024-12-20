@@ -24,10 +24,10 @@ Here runs the frontend with above provided image commands and get than get “bu
 4. Create “frontend” folder in “dist/llm-tool-win32-x64/resources” folder and add frontend ”build” folder by follow below image.
 ![image](https://github.com/user-attachments/assets/b56e066d-b932-4d5a-9c94-6fce918a62ca)
  
-5. Must and should followed the files path and add dots in frontend/build/“index.html” it will be path build in electron folder access.
+6. Must and should followed the files path and add dots in frontend/build/“index.html” it will be path build in electron folder access.
 ![image](https://github.com/user-attachments/assets/a580a18b-a2db-4e15-82b0-5511f08b858a)
  
-6. When you open frontend application (llm-tool.exe) file in electron folder and its open frontend application like below image.
+8. When you open frontend application (llm-tool.exe) file in electron folder and its open frontend application like below image.
 ![image](https://github.com/user-attachments/assets/35338cb0-d938-402c-826f-aedf51f24680)
  
  Commands: -
