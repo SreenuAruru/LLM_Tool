@@ -1,12 +1,19 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 
+
 a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    hiddenimports=[
+        "pydantic.deprecated.decorator",
+        "langchain_community",
+        "langchain_openai",
+        "langchain_google_genai",
+        "faiss_cpu",
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

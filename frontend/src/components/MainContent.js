@@ -135,7 +135,7 @@ const MainContent = ({ apiKey, selectedModel, storeId }) => {
           borderBottom: "1px solid #ddd",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          // justifyContent: "space-between",
         }}
       >
         <Typography variant="h6" sx={{ ml: 1 }}>

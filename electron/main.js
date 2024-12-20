@@ -14,7 +14,6 @@ function createWindow() {
 
   // Load the React build index.html file
   win.loadFile(path.join(__dirname, "../frontend/build/index.html"));
-
   // Open DevTools for debugging
   // win.webContents.openDevTools();
 }
